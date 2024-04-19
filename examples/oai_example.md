@@ -17,4 +17,4 @@ https://oaidalleapiprodscus.blob.core.windows.net/private/org-lu8zqrbC6NaPnzawQh
 
 ![Revised Image](oai_revised_image_example.png)
 
-
+Middle Earth’s Isengard with a dynamic, deep red sky inspired by Mordor’s invasion, featuring high-contrast lighting. Include sharp, clearly defined rock formations with realistic textures contrasted against deep, vibrant green trees. The river should appear crystal clear with distinct reflections of the sky, surrounded by a lively, detailed landscape with subtle hints of wildlife and natural elements to enhance realism.
