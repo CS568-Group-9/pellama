@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pellama</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>Pellama</h1>
+    <p>Welcome to PeLLama! This is a tool designed for optimizing prompts for image generation tasks via LLM instruction.
+        Our goal is to enable users to get better images out of image generation tools. Follow the steps below to get started!</p>
+    <form method="post">
+        <label for="user_input">Enter content:</label>
+        <input type="text" id="user_input" name="user_input">
+        <input type="submit" value="Submit">
+    </form>
+    
+    <img src="{{ url_for('static', filename='example.png') }}" alt="Example Image">
+</body>
+</html>

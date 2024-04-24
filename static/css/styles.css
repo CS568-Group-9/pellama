@@ -1,0 +1,14 @@
+img {
+    display: block;
+    margin: 0 auto;
+    max-width: 500px;
+}
+
+p {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+form {
+    margin-bottom: 20px;
+}
