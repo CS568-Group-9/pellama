@@ -20,29 +20,50 @@
 
     <main class="container">
         <section>
-            <p>
-                Welcome to PeLLama! This is a tool designed for optimizing prompts for image generation tasks via LLM
-                instruction. Our goal is to enable users to get better images out of image generation tools.
-                Follow the steps below to get started!
-            </p>
+            <h2>Which image fits best?</h2>
+
+            <blockquote>
+                "{{ cur_uc.initial.prompt }}"
+                <footer>
+                    <cite>Your prompt</cite>
+                </footer>
+            </blockquote>
+            
+            <blockquote>
+                "{{ cur_uc.feedback }}"
+                <footer>
+                    <cite>Your feedback</cite>
+                </footer>
+            </blockquote>
+
+            <blockquote>
+                "{{ cur_uc.manual }}"
+                <footer>
+                    <cite>Your revised prompt</cite>
+                </footer>
+            </blockquote>
 
             <div class="grid" style="place-items: center;">
                 <figure style="text-align: center;">
-                    <img src="{{ url_for('static', filename='example.png') }}" alt="Example Image" width="400">
-                    <figcaption>Example generation from "Middle Earth's Isengard during the Mordor invasion"
-                    </figcaption>
+                    <img src="{{ cur_uc.revised[0].response }}" alt="Generated image" width="400">
+                    <figcaption>@0</figcaption>
+                </figure>
+                <figure style="text-align: center;">
+                    <img src="{{ cur_uc.revised[1].response }}" alt="Generated image" width="400">
+                    <figcaption>@1</figcaption>
                 </figure>
             </div>
         </section>
+        
+        <!-- <h3>What should the image fix, add, or improve upon in order to better fit what you had in mind?</h3>
 
-        <form method="post" action="/">
+        <form method="post" action="/selection">
             <fieldset>
-                <textarea id="prompt-msg" name="prompt_msg" placeholder="Enter Image Prompt ..." required></textarea>
-                <small id="prompt-msg-helper">ex. a quick brown fox jumping over the lazy dogs</small>
+                <textarea id="feedback-msg" name="feedback_msg" placeholder="Enter Feedback ..." required></textarea>
+                <small id="feedback-msg-helper">ex. there should be less focus on trees, there should be a dog in the background</small>
                 <button id="submit" type="submit">Submit</button>
-                <small id="submit-helper"><i>~15-20s to generate image</i></small>
             </fieldset>
-        </form>
+        </form> -->
     </main>
 
     <script>
@@ -57,7 +78,7 @@
             elt.value = 0
             document.querySelector('main').appendChild(elt);
             const currentTime = Date.now()
-            const maxSeconds = 15
+            const maxSeconds = 45
             setInterval(() => elt.value = Math.ceil((Date.now() - currentTime) / (maxSeconds * 1000) * 100), 2500);
 
             document.querySelector('form')?.requestSubmit()
