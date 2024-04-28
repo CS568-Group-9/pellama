@@ -42,34 +42,31 @@
                     <cite>Your revised prompt</cite>
                 </footer>
             </blockquote>
-
-            <div class="grid" style="place-items: center;">
-                <figure style="text-align: center;">
-                    <img src="{{ cur_uc.revised[0].response }}" alt="Generated image" width="400">
-                    <figcaption>@0</figcaption>
-                </figure>
-                <figure style="text-align: center;">
-                    <img src="{{ cur_uc.revised[1].response }}" alt="Generated image" width="400">
-                    <figcaption>@1</figcaption>
-                </figure>
-            </div>
         </section>
         
-        <!-- <h3>What should the image fix, add, or improve upon in order to better fit what you had in mind?</h3>
-
         <form method="post" action="/selection">
             <fieldset>
-                <textarea id="feedback-msg" name="feedback_msg" placeholder="Enter Feedback ..." required></textarea>
-                <small id="feedback-msg-helper">ex. there should be less focus on trees, there should be a dog in the background</small>
+                <legend>Image preference:</legend>
+                <div class="grid" style="place-items: center;">
+                    {% for i, pr in choices %}
+                        <label>
+                            <figure style="text-align: center;">
+                                <img src="{{ pr.response }}" alt="Generated image" width="400">
+                                <figcaption>A generated image</figcaption>
+                            </figure>
+                            <input type="radio" name="img_selection" value="{{ i }}" {% if loop.index == 1 %} checked {% endif %} />
+                            Select this image
+                        </label>
+                    {% endfor %}
+                </div>
                 <button id="submit" type="submit">Submit</button>
             </fieldset>
-        </form> -->
+        </form>
     </main>
 
     <script>
         document.querySelector('#submit').addEventListener('click', (e) => {
             e.preventDefault();
-            if (!document.querySelector('#prompt-msg')?.value) return;
             e.target.disabled = true
             e.target.setAttribute('aria-busy', 'true')
 
@@ -78,7 +75,7 @@
             elt.value = 0
             document.querySelector('main').appendChild(elt);
             const currentTime = Date.now()
-            const maxSeconds = 45
+            const maxSeconds = 5
             setInterval(() => elt.value = Math.ceil((Date.now() - currentTime) / (maxSeconds * 1000) * 100), 2500);
 
             document.querySelector('form')?.requestSubmit()

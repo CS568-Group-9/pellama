@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Pellama</title>
+</head>
+
+<body>
+    <header>
+        <hgroup class="container">
+            <h1>Pellama</h1>
+            <small>Assisted Image Generation</small>
+        </hgroup>
+    </header>
+
+    <main class="container">
+        <h2>Historical view</h2>
+
+        {% for cur_uc in state %}
+            <section>
+                <h4>Generation {{ loop.index }}</h4>
+
+                {% if cur_uc.initial and cur_uc.initial.prompt %}
+                    <blockquote>
+                        "{{ cur_uc.initial.prompt }}"
+                        <footer>
+                            <cite>Your prompt</cite>
+                        </footer>
+                    </blockquote>
+                {% endif %}
+
+                {% if cur_uc.initial and cur_uc.initial.response %}
+                    <div class="grid" style="place-items: center;">
+                        <figure style="text-align: center;">
+                            <img src="{{ cur_uc.initial.response }}" alt="Generated image" width="400">
+                            <figcaption>Your generated image</figcaption>
+                        </figure>
+                    </div>
+                {% endif %}
+
+                {% if cur_uc.feedback %}
+                    <blockquote>
+                        "{{ cur_uc.feedback }}"
+                        <footer>
+                            <cite>Your feedback</cite>
+                        </footer>
+                    </blockquote>
+                {% endif %}
+
+                {% if cur_uc.manual %}
+                    <blockquote>
+                        "{{ cur_uc.manual }}"
+                        <footer>
+                            <cite>Your revised prompt</cite>
+                        </footer>
+                    </blockquote>
+                {% endif %}
+
+                {% if cur_uc.revised and cur_uc.idxSelect != -1 %}
+                    <div class="grid" style="place-items: center;">
+                        <figure style="text-align: center;">
+                            <img src="{{ cur_uc.revised[cur_uc.idxSelect].response }}" alt="Generated image" width="400">
+                            <figcaption>Your selected image (prompt source: {{ psMap[cur_uc.idxSelect] }})</figcaption>
+                        </figure>
+                    </div>
+                {% endif %}
+            </section>
+        {% endfor %}
+
+        <section>
+            <a href="/feedback">Return to Feedback</a>
+        </section>
+    </main>
+</body>
+
+</html>
