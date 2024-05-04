@@ -52,6 +52,7 @@ def index():
         uc.initial = PromptReponse(prompt_msg, url)
         state.append(uc)
         
+        dump_state(state)
         return redirect('/feedback')
 
     return render_template('index.html')
@@ -66,6 +67,7 @@ def feedback():
     if request.method == 'POST' and request.form['feedback_msg']:
         feedback_msg = request.form['feedback_msg']
         cur_uc.feedback = feedback_msg
+        dump_state(state)
         return redirect('/manualfix')
 
     return render_template('feedback.html', cur_uc=cur_uc)
@@ -111,6 +113,7 @@ def manualfix():
                 except Exception as exc:
                     print('Exception: %s' % (exc))
 
+        dump_state(state)
         return redirect('/selection')
 
     return render_template('manualfix.html', cur_uc=cur_uc)
@@ -130,6 +133,7 @@ def selection():
         uc.initial = cur_uc.revised[cur_uc.idxSelect]
         state.append(uc)
         
+        dump_state(state)
         return redirect('/feedback')
 
     choices = list(enumerate(cur_uc.revised))
