@@ -8,6 +8,7 @@ import random
 import uuid
 from dataclasses import dataclass
 from urllib.request import urlopen
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request
@@ -21,7 +22,8 @@ session_id = uuid.uuid4()
 
 class PromptSource(Enum):
     MANUAL = 0
-    PROMPT = 1
+    PROMPT_ONE = 1
+    PROMPT_ALL = 2
     def __int__(self):
         return self.value
 
@@ -79,13 +81,35 @@ def manualfix():
         manualfix_msg = request.form['manualfix_msg']
         cur_uc.manual = manualfix_msg
 
-        manual_img = dalleImg(cur_uc.manual)
-        gpt_prompt = gptPrompt(cur_uc.feedback, cur_uc.initial.prompt, cur_uc.initial.response)
-        gpt_img = dalleImg(gpt_prompt)
+        one_gpt_prompt = gptPrompt(historical=False)
+        all_gpt_prompt = gptPrompt(historical=True)
 
-        cur_uc.revised = [None] * len(PromptSource) 
-        cur_uc.revised[int(PromptSource.MANUAL)] = PromptReponse(cur_uc.manual, manual_img)
-        cur_uc.revised[int(PromptSource.PROMPT)] = PromptReponse(gpt_prompt, gpt_img)
+        promptInfos = [
+            {
+                'prompt': cur_uc.manual,
+                'ps': PromptSource.MANUAL,
+            },
+            {
+                'prompt': one_gpt_prompt,
+                'ps': PromptSource.PROMPT_ONE,
+            },
+            {
+                'prompt': all_gpt_prompt,
+                'ps': PromptSource.PROMPT_ALL,
+            },
+        ]
+
+        cur_uc.revised = [None] * len(promptInfos) 
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            # Start the load operations and mark each future with its URL
+            future_to_pi = {executor.submit(dalleImg, pi['prompt']): pi for pi in promptInfos}
+            for future in as_completed(future_to_pi):
+                try:
+                    pi = future_to_pi[future]
+                    img = future.result()
+                    cur_uc.revised[int(pi['ps'])] = PromptReponse(pi['prompt'], img)
+                except Exception as exc:
+                    print('Exception: %s' % (exc))
 
         return redirect('/selection')
 
@@ -130,7 +154,6 @@ def dump_state(state):
         'state': state,
     }
     out = json.dumps(out_obj, cls=JSONEncoder) + '\n'
-    print(out)
     with open('./session_results.jsonl', 'a+t') as f:
         f.write(out)
 
@@ -156,15 +179,16 @@ def dalleImg(prompt: str):
 
     return response.data[0].url
 
-def gptPrompt(feedback, initial_prompt, img_url):
+def gptPrompt(historical=False):
+    cur_uc, rest = state[-1], state[:-1]
+
+    feedback = cur_uc.feedback
+    initial_prompt = cur_uc.initial.prompt
+    img_url = cur_uc.initial.response
+
     base64_image = encode_image(img_url)
 
-    response = client.chat.completions.create(
-    model="gpt-4-turbo",
-    messages=[
-        {
-            "role": "user",
-            "content": [
+    content_arr = [
                 {"type": "text", "text": f"""
                 {feedback}
                 What could I use as a DALLE-3 prompt to make the image below better? 
@@ -180,10 +204,36 @@ def gptPrompt(feedback, initial_prompt, img_url):
                         "detail": "low"
                     },
                 },
-            ],
+            ]
+    
+    if historical and rest:
+        content_arr.append(
+                {"type": "text", "text": f"""
+                As follows is a series of image generating prompts, the images generated for the prompts, and the user feedbacks to change the prompt, in that order,
+                starting from the first generated to the most recent iteration. Use these historical responses to improve the prompt suggestion.
+                """
+                })
+    
+        for uc in rest:
+            content_arr.append({"type": "text", "text": f"""Prompt: "{uc.initial.prompt}" """})
+            content_arr.append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{encode_image(uc.initial.response)}",
+                            "detail": "low"
+                        },
+                    })
+            content_arr.append({"type": "text", "text": f"""Feedback: "{uc.feedback}" """})
+
+    response = client.chat.completions.create(
+    model="gpt-4-turbo",
+    messages=[
+        {
+            "role": "user",
+            "content": content_arr,
         }
     ],
-    max_tokens=500,
+    max_tokens=600,
     )
 
     return response.choices[0].message.content

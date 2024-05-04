@@ -51,7 +51,7 @@
                 <textarea id="manualfix-msg" name="manualfix_msg" placeholder="Enter Changed Prompt ..." required>{{ cur_uc.initial.prompt }}</textarea>
                 <small id="manualfix-msg-helper">ex. there should be less focus on trees, there should be a dog in the background</small>
                 <button id="submit" type="submit">Submit</button>
-                <small id="submit-helper"><i>~30-45s to generate images</i></small>
+                <small id="submit-helper"><i>~25-35s to generate images</i></small>
             </fieldset>
         </form>
     </main>
@@ -68,7 +68,7 @@
             elt.value = 0
             document.querySelector('main').appendChild(elt);
             const currentTime = Date.now()
-            const maxSeconds = 45
+            const maxSeconds = 30
             setInterval(() => elt.value = Math.ceil((Date.now() - currentTime) / (maxSeconds * 1000) * 100), 2500);
 
             document.querySelector('form')?.requestSubmit()
